@@ -1,0 +1,38 @@
+{
+  "name": "refrain",
+  "version": "0.0.0",
+  "description": "Refrain from unnecessary building.",
+  "keywords": [
+    "static site generator",
+    "generator",
+    "asset",
+    "pipeline",
+    "jit"
+  ],
+  "homepage": "https://github.com/shootaroo/refrain",
+  "bugs": "https://github.com/shootaroo/refrain/issues",
+  "license": "MIT",
+  "author": "shootaroo <shotaro.tsubouchi@gmail.com>",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/shootaroo/refrain.git"
+  },
+  "scripts": {
+    "test": "mocha",
+    "precommit": "npm test",
+    "prepush": "npm test"
+  },
+  "dependencies": {
+    "fast.js": "^0.0.5",
+    "glob": "^4.2.1",
+    "yamljs": "^0.2.1"
+  },
+  "devDependencies": {
+    "husky": "^0.6.2",
+    "mocha": "^2.0.1",
+    "power-assert": "^0.9.1"
+  },
+  "engines": {
+    "node": ">=0.8.0"
+  }
+}

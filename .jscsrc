@@ -1,0 +1,15 @@
+{
+  "preset": "google",
+  "disallowMultipleLineBreaks": null,
+  "disallowMultipleVarDecl": null,
+  "requireSpacesInFunctionExpression": {
+    "beforeOpeningCurlyBrace": true
+  },
+  "disallowSpacesInFunctionExpression": null,
+  "disallowSpacesInAnonymousFunctionExpression": null,
+  "disallowSpacesInNamedFunctionExpression": {
+    "beforeOpeningRoundBrace": true
+  },
+  "validateIndentation": 2,
+  "maximumLineLength": 120
+}
