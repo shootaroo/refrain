@@ -104,7 +104,7 @@ var refrain = {
     var ext = path.extname(content.filePath).substr(1);
     var tasks = this.options.pipeline[ext] || ['refrain-' + ext];
     for (var i = 0; i < tasks.length; i++) {
-      var module = require(tasks[i]);
+      var module = require(path.resolve('node_modules/' + tasks[i]));
       if (module) {
         text = module(text, content);
       }
