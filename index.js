@@ -52,7 +52,7 @@ var refrain = {
     var str = fs.readFileSync(path.join(srcDir, relativePath), 'utf-8');
     var match = FRONT_MATTER_REGEX.exec(str);
     var base = path.extname(relativePath) === '.html' ? relativePath : relativePath.substr(0, relativePath.length - path.extname(relativePath).length);
-    base = base.replace(/index.html$/, '').replace(/.html$/, '/');
+    base = base.replace(/index.html$/, '');
     var meta = match ? YAML.parse(match[4].trim()) : {};
     return {
       filePath: path.resolve(refrain.options.srcDir, relativePath),
