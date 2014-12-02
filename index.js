@@ -2,6 +2,7 @@
 var fs = require('fs');
 var path = require('path');
 
+var async = require('async');
 var fast = require('fast.js');
 var glob = require('glob');
 var YAML = require('yamljs');
@@ -26,11 +27,9 @@ var refrain = {
     url = url.substr(1);
     var pattern;
     if (path.extname(url) === '') {
-      pattern = '{' + path.join(url, 'index') + ',' + (url.charAt(url.length - 1) === '/' ? url.substr(0, url.length - 1) : url) + '}.html*';
-    } else if (url.indexOf('.html') >= 0) {
-      pattern = url + '*';
+      pattern = '{' + path.join(url, 'index') + ',' + (url.charAt(url.length - 1) === '/' ? url.substr(0, url.length - 1) : url) + '}.html.*';
     } else {
-      return null;
+      pattern = url + '.*';
     }
     var files = glob.sync(pattern, {
       cwd: path.resolve(this.options.srcDir),
@@ -53,66 +52,78 @@ var refrain = {
     var match = FRONT_MATTER_REGEX.exec(str);
     var base = path.extname(relativePath) === '.html' ? relativePath : relativePath.substr(0, relativePath.length - path.extname(relativePath).length);
     base = base.replace(/index.html$/, '');
-    var meta = match ? YAML.parse(match[4].trim()) : {};
+    var meta = match ? YAML.parse(match[4].trim()) : null;
     return {
       filePath: path.resolve(refrain.options.srcDir, relativePath),
       page: fast.assign({
         path: base.indexOf('/') === 0 ? base : '/' + base,
         filePath: path.join(srcDir, src)
       }, context.page, {
-        layout: meta.layout === undefined ? refrain.options.layout : meta.layout,
-        meta: fast.assign(meta, context.page.meta),
+        layout: meta ? meta.layout === undefined ? refrain.options.layout : meta.layout : null,
+        data: fast.assign({}, meta, context.page.data),
         template: match ? str.substring(match[0].length).trim() : str,
-        body: function () {
-          return refrain.pipeline(context);
-        }
       }),
       data: function (name) {
         return refrain.data(name);
       },
       pages: function () {
         return refrain.pages();
+      },
+      render: function (next) {
+        var self = this;
+        refrain.pipeline(this, function (err, output) {
+          self.page.body = output;
+          next();
+        });
       }
     };
   },
 
-  render: function (src, context) {
+  render: function (src, context, next) {
+    var self = this;
     var content = this.load(src, context);
     if (!content) {
+      next();
       return;
     }
 
-    if (!content.page.layout) {
-      return this.pipeline(content);
-    }
+    content.render(function () {
+      if (!content.page.layout) {
+        next(null, content.page.body);
+        return;
+      }
 
-    var isRelative = content.page.layout.indexOf('.') === 0;
-    var layoutPath = path.join(
-      isRelative ? path.dirname(content.filePath) : this.options.layoutDir,
-      content.page.layout + '.*');
-    var files = glob.sync(layoutPath, {
-      cwd: this.options.srcDir
+      var isRelative = content.page.layout.indexOf('.') === 0;
+      var layoutPath = path.join(
+        isRelative ? path.dirname(content.filePath) : self.options.layoutDir,
+        content.page.layout + '.*');
+      var files = glob.sync(layoutPath, {
+        cwd: self.options.srcDir
+      });
+      if (files) {
+        layoutPath = files[0];
+      }
+      layoutPath === src ? self.pipeline(content, next) : self.render(layoutPath, content, next);
     });
-    if (files) {
-      layoutPath = files[0];
-    }
-    return layoutPath === src ? this.pipeline(content) : this.render(layoutPath, content);
   },
 
-  pipeline: function (content) {
-    var text = content.page.template;
+  pipeline: function (content, next) {
+    var refrain = this;
     var ext = path.extname(content.filePath).substr(1);
     var tasks = this.options.pipeline[ext] || ['refrain-' + ext];
-    for (var i = 0; i < tasks.length; i++) {
-      var modulePath = path.resolve('node_modules/' + tasks[i]);
-      if (fs.existsSync(modulePath)) {
-        var module = require(path.resolve('node_modules/' + tasks[i]));
-        if (module) {
-          text = module(text, content);
-        }
+    async.reduce(tasks, content.page.template, function (text, task, next) {
+      var modulePath = path.resolve('node_modules/' + task);
+      if (!fs.existsSync(modulePath)) {
+        next(null, text);
+        return;
       }
-    }
-    return text;
+      var module = require(path.resolve('node_modules/' + task));
+      if (!module) {
+        next(null, text);
+        return;
+      }
+      module.call(refrain, text, content, next);
+    }, next);
   },
 
   pages: function () {
