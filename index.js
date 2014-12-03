@@ -27,7 +27,7 @@ var refrain = {
     url = url.substr(1);
     var pattern;
     if (path.extname(url) === '') {
-      pattern = '{' + path.join(url, 'index') + ',' + (url.charAt(url.length - 1) === '/' ? url.substr(0, url.length - 1) : url) + '}.html.*';
+      pattern = '{' + path.join(url, 'index') + ',' + (url.charAt(url.length - 1) === '/' ? url.substr(0, url.length - 1) : url) + '}.html*';
     } else {
       pattern = url + '.*';
     }
