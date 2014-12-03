@@ -110,19 +110,15 @@ var refrain = {
   pipeline: function (content, next) {
     var refrain = this;
     var ext = path.extname(content.filePath).substr(1);
-    var tasks = this.options.pipeline[ext] || ['refrain-' + ext];
+    var tasks = this.options.pipeline[ext] || [ext];
     async.reduce(tasks, content.page.template, function (text, task, next) {
-      var modulePath = path.resolve('node_modules/' + task);
+      var modulePath = path.resolve('node_modules/refrain-' + task);
       if (!fs.existsSync(modulePath)) {
         next(null, text);
         return;
       }
-      var module = require(path.resolve('node_modules/' + task));
-      if (!module) {
-        next(null, text);
-        return;
-      }
-      module.call(refrain, text, content, next);
+      var module = require(modulePath);
+      module ? module.call(refrain, text, content, next) : next(null, text);
     }, next);
   },
 
