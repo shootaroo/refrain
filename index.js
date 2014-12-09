@@ -73,7 +73,7 @@ var refrain = {
         var self = this;
         refrain.pipeline(this, function (err, output) {
           self.page.body = output;
-          next();
+          next(err);
         });
       }
     };
@@ -87,7 +87,9 @@ var refrain = {
       return;
     }
 
-    content.render(function () {
+    content.render(function (err) {
+      if (err) return next(err);
+
       if (!content.page.layout) {
         next(null, content.page.body);
         return;
