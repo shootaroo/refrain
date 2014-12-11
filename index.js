@@ -29,13 +29,17 @@ var refrain = {
     if (path.extname(url) === '') {
       pattern = '{' + path.join(url, 'index') + ',' + (url.charAt(url.length - 1) === '/' ? url.substr(0, url.length - 1) : url) + '}.html*';
     } else {
-      pattern = url + '.*';
+      pattern = url + '*';
     }
     var files = glob.sync(pattern, {
       cwd: path.resolve(this.options.srcDir),
       nodir: true
     });
-    return files.length ? files[0] : null;
+    if (files.length) {
+      var file = files[0];
+      return this.options.pipeline[path.extname(file).substr(1)] ? file : null;
+    }
+    return null;
   },
 
   load: function (src, context) {
@@ -112,7 +116,7 @@ var refrain = {
   pipeline: function (content, next) {
     var refrain = this;
     var ext = path.extname(content.filePath).substr(1);
-    var tasks = this.options.pipeline[ext] || [ext];
+    var tasks = this.options.pipeline[ext];
     async.reduce(tasks, content.page.template, function (text, task, next) {
       var modulePath = path.resolve('node_modules/refrain-' + task);
       if (!fs.existsSync(modulePath)) {
