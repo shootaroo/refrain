@@ -1,6 +1,6 @@
 {
   "name": "refrain",
-  "version": "0.0.6",
+  "version": "0.0.7",
   "description": "Refrain from unnecessary building.",
   "keywords": [
     "static site generator",
