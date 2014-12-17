@@ -55,10 +55,10 @@ var refrain = {
     var str = fs.readFileSync(path.join(srcDir, relativePath), 'utf-8');
     var match = FRONT_MATTER_REGEX.exec(str);
     var base = path.extname(relativePath) === '.html' ? relativePath : relativePath.substr(0, relativePath.length - path.extname(relativePath).length);
-    base = base.replace(/index.html$/, '');
+    base = base.replace(/index.html$/, '').replace(/\\/, '/');
     var meta = match ? YAML.parse(match[4].trim()) : null;
     return {
-      filePath: path.resolve(refrain.options.srcDir, relativePath),
+      filePath: path.resolve(refrain.options.srcDir, relativePath).replace(/\\/, '/'),
       page: fast.assign({
         path: base.indexOf('/') === 0 ? base : '/' + base,
         filePath: path.join(srcDir, src)
@@ -84,6 +84,7 @@ var refrain = {
   },
 
   render: function (src, context, next) {
+    src = src.replace(/\\/, '/');
     var self = this;
     var content = this.load(src, context);
     if (!content) {
@@ -101,8 +102,8 @@ var refrain = {
 
       var isRelative = content.page.layout.indexOf('.') === 0;
       var layoutPath = path.join(
-        isRelative ? path.dirname(content.filePath) : self.options.layoutDir,
-        content.page.layout + '.*');
+        isRelative ? path.relative(self.options.srcDir, path.dirname(content.filePath)) : self.options.layoutDir,
+        content.page.layout + '.*').replace(/\\/, '/');
       var files = glob.sync(layoutPath, {
         cwd: self.options.srcDir
       });
