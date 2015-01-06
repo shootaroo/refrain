@@ -57,7 +57,7 @@ var refrain = {
     var base = path.extname(relativePath) === '.html' ? relativePath : relativePath.substr(0, relativePath.length - path.extname(relativePath).length);
     base = base.replace(/index.html$/, '').replace(/\\/, '/');
     var meta = match ? YAML.parse(match[4].trim()) : null;
-    return {
+    var content = {
       filePath: path.resolve(refrain.options.srcDir, relativePath).replace(/\\/, '/'),
       page: fast.assign({
         path: base.indexOf('/') === 0 ? base : '/' + base,
@@ -67,12 +67,6 @@ var refrain = {
         data: fast.assign({}, meta, context.page.data),
         template: match ? str.substring(match[0].length).trim() : str,
       }),
-      data: function (name) {
-        return refrain.data(name);
-      },
-      pages: function () {
-        return refrain.pages();
-      },
       render: function (next) {
         var self = this;
         refrain.pipeline(this, function (err, output) {
@@ -81,6 +75,33 @@ var refrain = {
         });
       }
     };
+
+    Object.defineProperties(content, {
+      data: {
+        get: function () {
+          var def = {};
+          glob.sync('*.{yml,yaml,json}', {
+            cwd: path.resolve(refrain.options.dataDir),
+            nodir: true
+          }).forEach(function (file) {
+            var name = path.basename(file, path.extname(file));
+            Object.defineProperty(def, name, {
+              get: function () {
+                return refrain.data(name);
+              }
+            });
+          });
+          return def;
+        }
+      },
+      pages: {
+        get: function () {
+          return refrain.pages();
+        }
+      }
+    });
+
+    return content;
   },
 
   render: function (src, context, next) {
