@@ -54,7 +54,9 @@ var refrain = {
     var relativePath = path.relative(srcDir, src);
     var str = fs.readFileSync(path.join(srcDir, relativePath), 'utf-8');
     var match = FRONT_MATTER_REGEX.exec(str);
-    var base = path.extname(relativePath) === '.html' ? relativePath : relativePath.substr(0, relativePath.length - path.extname(relativePath).length);
+    var base = path.extname(relativePath) === '.html'
+      ? relativePath
+      : relativePath.substr(0, relativePath.length - path.extname(relativePath).length);
     base = base.replace(/index.html$/, '').replace(/\\/, '/');
     var meta = match ? YAML.parse(match[4].trim()) : null;
     var content = {
@@ -65,7 +67,7 @@ var refrain = {
       }, context.page, {
         layout: meta ? meta.layout === undefined ? refrain.options.layout : meta.layout : null,
         data: fast.assign({}, meta, context.page.data),
-        template: match ? str.substring(match[0].length).trim() : str,
+        template: match ? str.substring(match[0].length).trim() : str
       }),
       render: function (next) {
         var self = this;
@@ -128,10 +130,13 @@ var refrain = {
       var files = glob.sync(layoutPath, {
         cwd: self.options.srcDir
       });
-      if (files) {
+      if (files.length) {
         layoutPath = files[0];
+        if (layoutPath !== src) {
+          return self.render(layoutPath, content, next);
+        }
       }
-      layoutPath === src ? self.pipeline(content, next) : self.render(layoutPath, content, next);
+      self.pipeline(content, next);
     });
   },
 
