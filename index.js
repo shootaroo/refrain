@@ -66,7 +66,7 @@ var refrain = {
         filePath: path.join(srcDir, src)
       }, context.page, {
         layout: meta ? meta.layout === undefined ? refrain.options.layout : meta.layout : null,
-        data: fast.assign({}, meta, context.page.data),
+        data: fast.assign({}, meta || {}, context.page.data || {}),
         template: match ? str.substring(match[0].length).trim() : str
       }),
       render: function (next) {
