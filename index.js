@@ -66,8 +66,9 @@ var refrain = {
         path: base.indexOf('/') === 0 ? base : '/' + base,
         filePath: path.join(srcDir, src)
       }, context.page, {
-        layout: meta.layout === undefined && context.page.layout !== refrain.options.layout
-          ? refrain.options.layout : meta.layout,
+        layout: src.indexOf('.html') >= 0
+          ? meta.layout === undefined && context.page.layout !== refrain.options.layout ? refrain.options.layout : meta.layout
+          : null,
         data: fast.assign(meta, context.page.data || {}),
         template: match ? str.substring(match[0].length).trim() : str
       }),
