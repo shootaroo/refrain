@@ -27,7 +27,8 @@ var refrain = {
     url = url.substr(1);
     var pattern;
     if (path.extname(url) === '') {
-      pattern = '{' + path.join(url, 'index') + ',' + (url.charAt(url.length - 1) === '/' ? url.substr(0, url.length - 1) : url) + '}.html*';
+      pattern = '{' + path.join(url, 'index') + ',' + (url.charAt(url.length - 1) === '/'
+        ? url.substr(0, url.length - 1) : url) + '}.html*';
     } else {
       pattern = url + '*';
     }
@@ -65,7 +66,8 @@ var refrain = {
         path: base.indexOf('/') === 0 ? base : '/' + base,
         filePath: path.join(srcDir, src)
       }, context.page, {
-        layout: meta.layout === undefined && context.page.layout !== refrain.options.layout ? refrain.options.layout : meta.layout,
+        layout: meta.layout === undefined && context.page.layout !== refrain.options.layout
+          ? refrain.options.layout : meta.layout,
         data: fast.assign(meta, context.page.data || {}),
         template: match ? str.substring(match[0].length).trim() : str
       }),
