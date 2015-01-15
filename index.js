@@ -58,15 +58,15 @@ var refrain = {
       ? relativePath
       : relativePath.substr(0, relativePath.length - path.extname(relativePath).length);
     base = base.replace(/index.html$/, '').replace(/\\/, '/');
-    var meta = match ? YAML.parse(match[4].trim()) : null;
+    var meta = match ? YAML.parse(match[4].trim()) : {};
     var content = {
       filePath: path.resolve(refrain.options.srcDir, relativePath).replace(/\\/, '/'),
       page: fast.assign({
         path: base.indexOf('/') === 0 ? base : '/' + base,
         filePath: path.join(srcDir, src)
       }, context.page, {
-        layout: meta ? meta.layout === undefined ? refrain.options.layout : meta.layout : null,
-        data: fast.assign({}, meta || {}, context.page.data || {}),
+        layout: meta.layout === undefined && context.page.layout !== refrain.options.layout ? refrain.options.layout : meta.layout,
+        data: fast.assign(meta, context.page.data || {}),
         template: match ? str.substring(match[0].length).trim() : str
       }),
       render: function (next) {
@@ -125,7 +125,7 @@ var refrain = {
 
       var isRelative = content.page.layout.indexOf('.') === 0;
       var layoutPath = path.join(
-        isRelative ? path.relative(self.options.srcDir, path.dirname(content.filePath)) : self.options.layoutDir,
+        path.relative(self.options.srcDir, isRelative ? path.dirname(content.filePath) : self.options.layoutDir),
         content.page.layout + '.*').replace(/\\/, '/');
       var files = glob.sync(layoutPath, {
         cwd: self.options.srcDir
