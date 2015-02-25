@@ -59,17 +59,25 @@ var refrain = {
       ? relativePath
       : relativePath.substr(0, relativePath.length - path.extname(relativePath).length);
     base = base.replace(/index.html$/, '').replace(/\\/, '/');
-    var meta = match ? YAML.parse(match[4].trim()) : {};
+    var meta = match ? YAML.parse(match[4].trim()) || {} : null;
+
+    var layout = null;
+    if (meta) {
+      if (meta.layout === undefined && context.page.layout !== refrain.options.layout) {
+        layout = refrain.options.layout;
+      } else {
+        layout = meta.layout;
+      }
+    }
+
     var content = {
       filePath: path.resolve(refrain.options.srcDir, relativePath).replace(/\\/, '/'),
       page: fast.assign({
         path: base.indexOf('/') === 0 ? base : '/' + base,
         filePath: path.join(srcDir, src)
       }, context.page, {
-        layout: src.indexOf('.html') >= 0
-          ? meta.layout === undefined && context.page.layout !== refrain.options.layout ? refrain.options.layout : meta.layout
-          : null,
-        data: fast.assign(meta, context.page.data || {}),
+        layout: layout,
+        data: fast.assign(meta || {}, context.page.data || {}),
         template: match ? str.substring(match[0].length).trim() : str
       }),
       render: function (next) {
