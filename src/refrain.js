@@ -9,7 +9,6 @@ var YAML = require('yamljs');
 
 var FRONT_MATTER_REGEX = /^\s*(([^\s\d\w])\2{2,})(?:\x20*([a-z]+))?([\s\S]*?)\1/;
 
-module.exports = options => new Refrain(options);
 
 class Refrain {
 
@@ -48,29 +47,24 @@ class Refrain {
 
 
   defineGetter(content) {
-    var refrain = this;
     return Object.defineProperties(content, {
       data: {
-        get: function () {
+        get: () => {
           var def = {};
           glob.sync('*.{yml,yaml,json}', {
-            cwd: path.resolve(refrain.options.dataDir),
+            cwd: path.resolve(this.options.dataDir),
             nodir: true
-          }).forEach(function (file) {
+          }).forEach(file => {
             var name = path.basename(file, path.extname(file));
             Object.defineProperty(def, name, {
-              get: function () {
-                return refrain.data(name);
-              }
+              get: () => this.data(name)
             });
           });
           return def;
         }
       },
       pages: {
-        get: function () {
-          return refrain.pages();
-        }
+        get: () => this.pages()
       }
     });
   }
@@ -112,10 +106,9 @@ class Refrain {
         data: fast.assign(meta || {}, context.page.data || {}),
         template: match ? str.substring(match[0].length).trim() : str
       }),
-      render: function (next) {
-        var self = this;
-        refrain.pipeline(this, function (err, output) {
-          self.page.body = output;
+      render: next => {
+        refrain.pipeline(content, (err, output) => {
+          content.page.body = output;
           next(err);
         });
       }
@@ -126,14 +119,13 @@ class Refrain {
 
   render(src, context, next) {
     src = src.replace(/\\/, '/');
-    var self = this;
     var content = this.load(src, context);
     if (!content) {
       next();
       return;
     }
 
-    content.render(function (err) {
+    content.render(err => {
       if (err) return next(err);
 
       if (!content.page.layout) {
@@ -143,28 +135,27 @@ class Refrain {
 
       var isRelative = content.page.layout.indexOf('.') === 0;
       var layoutPath = path.join(
-        path.relative(self.options.srcDir, isRelative ? path.dirname(content.filePath) : self.options.layoutDir),
+        path.relative(this.options.srcDir, isRelative ? path.dirname(content.filePath) : this.options.layoutDir),
         content.page.layout + '.*').replace(/\\/, '/');
       var files = glob.sync(layoutPath, {
-        cwd: self.options.srcDir
+        cwd: this.options.srcDir
       });
       if (files.length) {
         layoutPath = files[0];
         if (layoutPath !== src) {
-          return self.render(layoutPath, content, next);
+          return this.render(layoutPath, content, next);
         }
       }
-      self.pipeline(content, next);
+      this.pipeline(content, next);
     });
   }
 
 
   pipeline(content, next) {
-    var refrain = this;
     var ext = path.extname(content.filePath).substr(1);
     var tasks = this.options.pipeline[ext];
     if (tasks) {
-      async.reduce(tasks, content.page.template, function (text, task, next) {
+      async.reduce(tasks, content.page.template, (text, task, next) => {
         var modulePath = path.resolve('node_modules/refrain-' + task);
         if (!fs.existsSync(modulePath)) {
           next(null, text);
@@ -172,7 +163,7 @@ class Refrain {
         }
         var module = require(modulePath);
         if (module) {
-          module.call(refrain, text, content, next);
+          module.call(this, text, content, next);
         } else {
           next(null, text);
         }
@@ -184,13 +175,10 @@ class Refrain {
 
 
   pages() {
-    var self = this;
     return glob.sync('**/*.html*', {
       cwd: path.resolve(this.options.srcDir),
       nodir: true
-    }).map(function (file) {
-      return self.load(file).page;
-    });
+    }).map(file => this.load(file).page);
   }
 
 
@@ -199,7 +187,7 @@ class Refrain {
     return glob.sync(name + '.*', {
       cwd: srcDir,
       nodir: true
-    }).reduce(function (data, file) {
+    }).reduce((data, file) => {
       switch (path.extname(file)) {
         case '.yml':
         case '.yaml':
@@ -213,3 +201,6 @@ class Refrain {
     }, {});
   }
 }
+
+
+module.exports = options => new Refrain(options);
