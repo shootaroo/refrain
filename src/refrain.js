@@ -9,21 +9,23 @@ var YAML = require('yamljs');
 
 var FRONT_MATTER_REGEX = /^\s*(([^\s\d\w])\2{2,})(?:\x20*([a-z]+))?([\s\S]*?)\1/;
 
-module.exports = function (options) {
-  var obj = Object.create(refrain);
-  obj.options = fast.assign({
-    srcDir: 'src',
-    dataDir: 'data',
-    buildDir: 'build',
-    layoutDir: 'layouts',
-    layout: 'default',
-    pipeline: {}
-  }, options);
-  return obj;
-};
+module.exports = options => new Refrain(options);
 
-var refrain = {
-  find: function (url) {
+class Refrain {
+
+  constructor(options) {
+    this.options = fast.assign({
+      srcDir: 'src',
+      dataDir: 'data',
+      buildDir: 'build',
+      layoutDir: 'layouts',
+      layout: 'default',
+      pipeline: {}
+    }, options);
+  }
+
+
+  find(url) {
     url = url.substr(1);
     var pattern;
     if (path.extname(url) === '') {
@@ -42,9 +44,10 @@ var refrain = {
       return this.options.pipeline[ext] || ext === 'html' ? file : null;
     }
     return null;
-  },
+  }
 
-  defineGetter: function (content) {
+
+  defineGetter(content) {
     var refrain = this;
     return Object.defineProperties(content, {
       data: {
@@ -70,9 +73,10 @@ var refrain = {
         }
       }
     });
-  },
+  }
 
-  load: function (src, context) {
+
+  load(src, context) {
     context = context || {
       page: {}
     };
@@ -117,9 +121,10 @@ var refrain = {
       }
     };
     return this.defineGetter(content);
-  },
+  }
 
-  render: function (src, context, next) {
+
+  render(src, context, next) {
     src = src.replace(/\\/, '/');
     var self = this;
     var content = this.load(src, context);
@@ -151,9 +156,10 @@ var refrain = {
       }
       self.pipeline(content, next);
     });
-  },
+  }
 
-  pipeline: function (content, next) {
+
+  pipeline(content, next) {
     var refrain = this;
     var ext = path.extname(content.filePath).substr(1);
     var tasks = this.options.pipeline[ext];
@@ -174,9 +180,10 @@ var refrain = {
     } else {
       next(null, content.page.template);
     }
-  },
+  }
 
-  pages: function () {
+
+  pages() {
     var self = this;
     return glob.sync('**/*.html*', {
       cwd: path.resolve(this.options.srcDir),
@@ -184,9 +191,10 @@ var refrain = {
     }).map(function (file) {
       return self.load(file).page;
     });
-  },
+  }
 
-  data: function (name) {
+
+  data(name) {
     var srcDir = path.resolve(this.options.dataDir);
     return glob.sync(name + '.*', {
       cwd: srcDir,
@@ -204,4 +212,4 @@ var refrain = {
       return data;
     }, {});
   }
-};
+}
