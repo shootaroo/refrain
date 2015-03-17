@@ -155,15 +155,19 @@ var refrain = {
     var refrain = this;
     var ext = path.extname(content.filePath).substr(1);
     var tasks = this.options.pipeline[ext];
-    async.reduce(tasks, content.page.template, function (text, task, next) {
-      var modulePath = path.resolve('node_modules/refrain-' + task);
-      if (!fs.existsSync(modulePath)) {
-        next(null, text);
-        return;
-      }
-      var module = require(modulePath);
-      module ? module.call(refrain, text, content, next) : next(null, text);
-    }, next);
+    if (tasks) {
+      async.reduce(tasks, content.page.template, function (text, task, next) {
+        var modulePath = path.resolve('node_modules/refrain-' + task);
+        if (!fs.existsSync(modulePath)) {
+          next(null, text);
+          return;
+        }
+        var module = require(modulePath);
+        module ? module.call(refrain, text, content, next) : next(null, text);
+      }, next);
+    } else {
+      next(null, content.page.template);
+    }
   },
 
   pages: function () {
