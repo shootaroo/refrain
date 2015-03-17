@@ -38,7 +38,8 @@ var refrain = {
     });
     if (files.length) {
       var file = files[0];
-      return this.options.pipeline[path.extname(file).substr(1)] ? file : null;
+      var ext = path.extname(file).substr(1);
+      return this.options.pipeline[ext] || ext === 'html' ? file : null;
     }
     return null;
   },
