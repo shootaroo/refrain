@@ -27,8 +27,8 @@ var refrain = {
     url = url.substr(1);
     var pattern;
     if (path.extname(url) === '') {
-      pattern = '{' + path.join(url, 'index') + ',' + (url.charAt(url.length - 1) === '/'
-        ? url.substr(0, url.length - 1) : url) + '}.html*';
+      pattern = '{' + path.join(url, 'index') + ',' + (url.charAt(url.length - 1) === '/' ?
+        url.substr(0, url.length - 1) : url) + '}.html*';
     } else {
       pattern = url + '*';
     }
@@ -43,6 +43,34 @@ var refrain = {
     return null;
   },
 
+  defineGetter: function (content) {
+    var refrain = this;
+    return Object.defineProperties(content, {
+      data: {
+        get: function () {
+          var def = {};
+          glob.sync('*.{yml,yaml,json}', {
+            cwd: path.resolve(refrain.options.dataDir),
+            nodir: true
+          }).forEach(function (file) {
+            var name = path.basename(file, path.extname(file));
+            Object.defineProperty(def, name, {
+              get: function () {
+                return refrain.data(name);
+              }
+            });
+          });
+          return def;
+        }
+      },
+      pages: {
+        get: function () {
+          return refrain.pages();
+        }
+      }
+    });
+  },
+
   load: function (src, context) {
     context = context || {
       page: {}
@@ -55,9 +83,8 @@ var refrain = {
     var relativePath = path.relative(srcDir, src);
     var str = fs.readFileSync(path.join(srcDir, relativePath), 'utf-8');
     var match = FRONT_MATTER_REGEX.exec(str);
-    var base = path.extname(relativePath) === '.html'
-      ? relativePath
-      : relativePath.substr(0, relativePath.length - path.extname(relativePath).length);
+    var base = path.extname(relativePath) === '.html' ?
+      relativePath : relativePath.substr(0, relativePath.length - path.extname(relativePath).length);
     base = base.replace(/index.html$/, '').replace(/\\/, '/');
     var meta = match ? YAML.parse(match[4].trim()) || {} : null;
 
@@ -88,33 +115,7 @@ var refrain = {
         });
       }
     };
-
-    Object.defineProperties(content, {
-      data: {
-        get: function () {
-          var def = {};
-          glob.sync('*.{yml,yaml,json}', {
-            cwd: path.resolve(refrain.options.dataDir),
-            nodir: true
-          }).forEach(function (file) {
-            var name = path.basename(file, path.extname(file));
-            Object.defineProperty(def, name, {
-              get: function () {
-                return refrain.data(name);
-              }
-            });
-          });
-          return def;
-        }
-      },
-      pages: {
-        get: function () {
-          return refrain.pages();
-        }
-      }
-    });
-
-    return content;
+    return this.defineGetter(content);
   },
 
   render: function (src, context, next) {
@@ -163,7 +164,11 @@ var refrain = {
           return;
         }
         var module = require(modulePath);
-        module ? module.call(refrain, text, content, next) : next(null, text);
+        if (module) {
+          module.call(refrain, text, content, next);
+        } else {
+          next(null, text);
+        }
       }, next);
     } else {
       next(null, content.page.template);

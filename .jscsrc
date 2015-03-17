@@ -2,6 +2,14 @@
   "preset": "google",
   "disallowMultipleLineBreaks": null,
   "disallowMultipleVarDecl": null,
+  "requireCurlyBraces": [
+    "else",
+    "for",
+    "while",
+    "do",
+    "try",
+    "catch"
+  ],
   "requireSpacesInFunctionExpression": {
     "beforeOpeningCurlyBrace": true
   },

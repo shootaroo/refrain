@@ -20,10 +20,20 @@
   "files": [
     "index.js"
   ],
+  "scripts": {
+    "test": "jscs *.js && jshint *.js",
+    "precommit": "npm test",
+    "prepush": "npm test"
+  },
   "dependencies": {
     "async": "^0.9.0",
     "fast.js": "^0.1.0",
     "glob": "^4.3.0",
     "yamljs": "^0.2.0"
+  },
+  "devDependencies": {
+    "husky": "^0.6.0",
+    "jscs": "^1.11.0",
+    "jshint": "^2.6.0"
   }
 }
