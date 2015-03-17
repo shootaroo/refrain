@@ -40,7 +40,7 @@ class Refrain {
     if (files.length) {
       var file = files[0];
       var ext = path.extname(file).substr(1);
-      return this.options.pipeline[ext] || ext === 'html' ? file : null;
+      return this.options.pipeline[ext] || ext === 'html' || ext === 'css' || ext === 'js' ? file : null;
     }
     return null;
   }

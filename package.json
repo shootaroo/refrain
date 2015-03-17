@@ -24,7 +24,9 @@
   "scripts": {
     "build": "babel src --out-dir lib --source-maps-inline",
     "watch": "babel src --out-dir lib --source-maps-inline --watch",
-    "test": "jscs src/*.js && jshint src/*.js",
+    "lint": "jscs src/*.js test/*.js && jshint src/*.js test/*.js",
+    "mocha": "mocha --compilers js:espower-babel/guess test/*.js",
+    "test": "npm run lint && npm run build && npm run mocha",
     "precommit": "npm test",
     "prepush": "npm test"
   },
@@ -36,8 +38,11 @@
   },
   "devDependencies": {
     "babel": "^4.7.0",
+    "espower-babel": "^1.3.0",
     "husky": "^0.7.0",
     "jscs": "^1.11.0",
-    "jshint": "^2.6.0"
+    "jshint": "^2.6.0",
+    "mocha": "^2.2.0",
+    "power-assert": "^0.10.0"
   }
 }
