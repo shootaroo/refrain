@@ -1,13 +1,13 @@
 'use strict';
-var fs = require('fs');
-var path = require('path');
+const fs = require('fs');
+const path = require('path');
 
-var async = require('async');
-var fast = require('fast.js');
-var glob = require('glob');
-var YAML = require('yamljs');
+const async = require('async');
+const fast = require('fast.js');
+const glob = require('glob');
+const YAML = require('yamljs');
 
-var FRONT_MATTER_REGEX = /^\s*(([^\s\d\w])\2{2,})(?:\x20*([a-z]+))?([\s\S]*?)\1/;
+const FRONT_MATTER_REGEX = /^\s*(([^\s\d\w])\2{2,})(?:\x20*([a-z]+))?([\s\S]*?)\1/;
 
 
 class Refrain {
@@ -26,20 +26,20 @@ class Refrain {
 
   find(url) {
     url = url.substr(1);
-    var pattern;
+    let pattern;
     if (path.extname(url) === '') {
       pattern = '{' + path.join(url, 'index') + ',' + (url.charAt(url.length - 1) === '/' ?
         url.substr(0, url.length - 1) : url) + '}.html*';
     } else {
       pattern = url + '*';
     }
-    var files = glob.sync(pattern, {
+    let files = glob.sync(pattern, {
       cwd: path.resolve(this.options.srcDir),
       nodir: true
     });
     if (files.length) {
-      var file = files[0];
-      var ext = path.extname(file).substr(1);
+      let file = files[0];
+      let ext = path.extname(file).substr(1);
       return this.options.pipeline[ext] || ext === 'html' || ext === 'css' || ext === 'js' ? file : null;
     }
     return null;
@@ -50,12 +50,12 @@ class Refrain {
     return Object.defineProperties(content, {
       data: {
         get: () => {
-          var def = {};
+          let def = {};
           glob.sync('*.{yml,yaml,json}', {
             cwd: path.resolve(this.options.dataDir),
             nodir: true
           }).forEach(file => {
-            var name = path.basename(file, path.extname(file));
+            let name = path.basename(file, path.extname(file));
             Object.defineProperty(def, name, {
               get: () => this.data(name)
             });
@@ -74,20 +74,20 @@ class Refrain {
     context = context || {
       page: {}
     };
-    var refrain = this;
-    var srcDir = path.resolve(refrain.options.srcDir);
+    let refrain = this;
+    let srcDir = path.resolve(refrain.options.srcDir);
     if (src.indexOf('/') !== 0) {
       src = path.join(refrain.options.srcDir, src);
     }
-    var relativePath = path.relative(srcDir, src);
-    var str = fs.readFileSync(path.join(srcDir, relativePath), 'utf-8');
-    var match = FRONT_MATTER_REGEX.exec(str);
-    var base = path.extname(relativePath) === '.html' ?
+    let relativePath = path.relative(srcDir, src);
+    let str = fs.readFileSync(path.join(srcDir, relativePath), 'utf-8');
+    let match = FRONT_MATTER_REGEX.exec(str);
+    let base = path.extname(relativePath) === '.html' ?
       relativePath : relativePath.substr(0, relativePath.length - path.extname(relativePath).length);
     base = base.replace(/index.html$/, '').replace(/\\/, '/');
-    var meta = match ? YAML.parse(match[4].trim()) || {} : null;
+    let meta = match ? YAML.parse(match[4].trim()) || {} : null;
 
-    var layout = null;
+    let layout = null;
     if (meta) {
       if (meta.layout === undefined && context.page.layout !== refrain.options.layout) {
         layout = refrain.options.layout;
@@ -96,7 +96,7 @@ class Refrain {
       }
     }
 
-    var content = {
+    let content = {
       filePath: path.resolve(refrain.options.srcDir, relativePath).replace(/\\/, '/'),
       page: fast.assign({
         path: base.indexOf('/') === 0 ? base : '/' + base,
@@ -119,7 +119,7 @@ class Refrain {
 
   render(src, context, next) {
     src = src.replace(/\\/, '/');
-    var content = this.load(src, context);
+    let content = this.load(src, context);
     if (!content) {
       next();
       return;
@@ -133,11 +133,11 @@ class Refrain {
         return;
       }
 
-      var isRelative = content.page.layout.indexOf('.') === 0;
-      var layoutPath = path.join(
+      let isRelative = content.page.layout.indexOf('.') === 0;
+      let layoutPath = path.join(
         path.relative(this.options.srcDir, isRelative ? path.dirname(content.filePath) : this.options.layoutDir),
         content.page.layout + '.*').replace(/\\/, '/');
-      var files = glob.sync(layoutPath, {
+      let files = glob.sync(layoutPath, {
         cwd: this.options.srcDir
       });
       if (files.length) {
@@ -152,16 +152,16 @@ class Refrain {
 
 
   pipeline(content, next) {
-    var ext = path.extname(content.filePath).substr(1);
-    var tasks = this.options.pipeline[ext];
+    let ext = path.extname(content.filePath).substr(1);
+    let tasks = this.options.pipeline[ext];
     if (tasks) {
       async.reduce(tasks, content.page.template, (text, task, next) => {
-        var modulePath = path.resolve('node_modules/refrain-' + task);
+        let modulePath = path.resolve('node_modules/refrain-' + task);
         if (!fs.existsSync(modulePath)) {
           next(null, text);
           return;
         }
-        var module = require(modulePath);
+        let module = require(modulePath);
         if (module) {
           module.call(this, text, content, next);
         } else {
@@ -183,7 +183,7 @@ class Refrain {
 
 
   data(name) {
-    var srcDir = path.resolve(this.options.dataDir);
+    let srcDir = path.resolve(this.options.dataDir);
     return glob.sync(name + '.*', {
       cwd: srcDir,
       nodir: true
