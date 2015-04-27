@@ -165,16 +165,18 @@ class Refrain {
           if (module) {
             module.call(this, text, content, next);
           } else {
-            next(null, text);
+            return next(null, text);
           }
         }
         if (typeof task === 'function') {
           try {
             task.call(this, text, content, next);
           } catch (err) {
-            next(null, text);
+            return next(err);
           }
         }
+
+        return next('found a illegal pipeline task.');
       }, next);
     } else {
       next(null, content.page.template);
