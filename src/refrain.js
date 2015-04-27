@@ -167,16 +167,15 @@ class Refrain {
           } else {
             return next(null, text);
           }
-        }
-        if (typeof task === 'function') {
+        } else if (typeof task === 'function') {
           try {
             task.call(this, text, content, next);
           } catch (err) {
             return next(err);
           }
+        } else {
+          return next('found a illegal pipeline task.');
         }
-
-        return next('found a illegal pipeline task.');
       }, next);
     } else {
       next(null, content.page.template);
