@@ -156,16 +156,24 @@ class Refrain {
     let tasks = this.options.pipeline[ext];
     if (tasks) {
       async.reduce(tasks, content.page.template, (text, task, next) => {
-        let modulePath = path.resolve('node_modules/refrain-' + task);
-        if (!fs.existsSync(modulePath)) {
-          next(null, text);
-          return;
+        if (typeof task === 'string') {
+          let modulePath = path.resolve('node_modules/refrain-' + task);
+          if (!fs.existsSync(modulePath)) {
+            return next(null, text);
+          }
+          let module = require(modulePath);
+          if (module) {
+            module.call(this, text, content, next);
+          } else {
+            next(null, text);
+          }
         }
-        let module = require(modulePath);
-        if (module) {
-          module.call(this, text, content, next);
-        } else {
-          next(null, text);
+        if (typeof task === 'function') {
+          try {
+            task.call(this, text, content, next);
+          } catch (err) {
+            next(null, text);
+          }
         }
       }, next);
     } else {
