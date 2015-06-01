@@ -1,11 +1,11 @@
 'use strict';
-const fs = require('fs');
-const path = require('path');
+import fs from 'fs';
+import path from 'path';
 
-const async = require('async');
-const fast = require('fast.js');
-const glob = require('glob');
-const YAML = require('yamljs');
+import async from 'async';
+import {assign} from 'fast.js';
+import glob from 'glob';
+import YAML from 'yamljs';
 
 const FRONT_MATTER_REGEX = /^\s*(([^\s\d\w])\2{2,})(?:\x20*([a-z]+))?([\s\S]*?)\1/;
 
@@ -13,7 +13,7 @@ const FRONT_MATTER_REGEX = /^\s*(([^\s\d\w])\2{2,})(?:\x20*([a-z]+))?([\s\S]*?)\
 class Refrain {
 
   constructor(options) {
-    this.options = fast.assign({
+    this.options = assign({
       srcDir: 'src',
       dataDir: 'data',
       buildDir: 'build',
@@ -98,12 +98,12 @@ class Refrain {
 
     let content = {
       filePath: path.resolve(refrain.options.srcDir, relativePath).replace(/\\/, '/'),
-      page: fast.assign({
+      page: assign({
         path: base.indexOf('/') === 0 ? base : '/' + base,
         filePath: path.join(srcDir, src)
       }, context.page, {
         layout: layout,
-        data: fast.assign(meta || {}, context.page.data || {}),
+        data: assign(meta || {}, context.page.data || {}),
         template: match ? str.substring(match[0].length).trim() : str
       }),
       render: next => {
@@ -200,10 +200,10 @@ class Refrain {
       switch (path.extname(file)) {
         case '.yml':
         case '.yaml':
-          fast.assign(data, require('yamljs').parse(fs.readFileSync(path.join(srcDir, file), 'utf-8')));
+          assign(data, require('yamljs').parse(fs.readFileSync(path.join(srcDir, file), 'utf-8')));
           break;
         case '.json':
-          fast.assign(data, JSON.parse(fs.readFileSync(path.join(srcDir, file), 'utf-8')));
+          assign(data, JSON.parse(fs.readFileSync(path.join(srcDir, file), 'utf-8')));
           break;
       }
       return data;
