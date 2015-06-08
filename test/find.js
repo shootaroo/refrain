@@ -4,7 +4,7 @@ var assert = require('power-assert');
 
 
 it('find1', () => {
-  var refrain = require('..')({
+  var refrain = require('../src/refrain')({
     srcDir: 'test/assets'
   });
 
@@ -20,7 +20,7 @@ it('find1', () => {
 
 
 it('find2 pipeline', () => {
-  var refrain = require('..')({
+  var refrain = require('../src/refrain')({
     srcDir: 'test/assets',
     pipeline: {
       ejs: [],
