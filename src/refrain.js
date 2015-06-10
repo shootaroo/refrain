@@ -19,7 +19,8 @@ class Refrain {
       buildDir: 'build',
       layoutDir: 'layouts',
       layout: 'default',
-      pipeline: {}
+      pipeline: {},
+      data: {}
     }, options);
   }
 
@@ -96,6 +97,8 @@ class Refrain {
       }
     }
 
+    let pageData = assign(meta || {}, context.page.data || {}, this.options.data || {});
+
     let content = {
       filePath: path.resolve(refrain.options.srcDir, relativePath).replace(/\\/, '/'),
       page: assign({
@@ -103,7 +106,7 @@ class Refrain {
         filePath: path.join(srcDir, src)
       }, context.page, {
         layout: layout,
-        data: assign(meta || {}, context.page.data || {}),
+        data: pageData,
         template: match ? str.substring(match[0].length).trim() : str
       }),
       render: next => {

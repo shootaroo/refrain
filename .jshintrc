@@ -2,13 +2,14 @@
   "maxparams": 5,
   "maxdepth": 3,
   "maxstatements": 30,
-  "maxcomplexity": 12,
+  "maxcomplexity": 13,
   "maxlen": 500,
 
   "node": true,
 
   "bitwise": true,
   "eqeqeq": true,
+  "eqnull": true,
   "esnext": true,
   "forin": true,
   "freeze": true,
