@@ -12,6 +12,17 @@ const FRONT_MATTER_REGEX = /^\s*(([^\s\d\w])\2{2,})(?:\x20*([a-z]+))?([\s\S]*?)\
 
 class Refrain {
 
+  /**
+   * @constructor
+   * @param {String} [srcDir='src'] The source directory
+   * @param {String} [dataDir='data'] The data directory
+   * @param {String} [buildDir='build'] The build directory
+   * @param {String} [layoutDir='layouts'] The layout directory
+   * @param {String} [layout='default'] The default layout
+   * @param {Object} [pipeline={}] The dictionary of pipeline tasks
+   * @param {Object} [data={}] The additional data object, this merges into
+   *                           context.page.data object before pipeline processing.
+   */
   constructor(options) {
     this.options = assign({
       srcDir: 'src',
@@ -19,7 +30,8 @@ class Refrain {
       buildDir: 'build',
       layoutDir: 'layouts',
       layout: 'default',
-      pipeline: {}
+      pipeline: {},
+      data: {}
     }, options);
   }
 
@@ -96,6 +108,8 @@ class Refrain {
       }
     }
 
+    let pageData = assign(meta || {}, context.page.data || {}, this.options.data || {});
+
     let content = {
       filePath: path.resolve(refrain.options.srcDir, relativePath).replace(/\\/, '/'),
       page: assign({
@@ -103,7 +117,7 @@ class Refrain {
         filePath: path.join(srcDir, src)
       }, context.page, {
         layout: layout,
-        data: assign(meta || {}, context.page.data || {}),
+        data: pageData,
         template: match ? str.substring(match[0].length).trim() : str
       }),
       render: next => {
