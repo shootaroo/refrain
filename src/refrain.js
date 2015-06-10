@@ -12,6 +12,17 @@ const FRONT_MATTER_REGEX = /^\s*(([^\s\d\w])\2{2,})(?:\x20*([a-z]+))?([\s\S]*?)\
 
 class Refrain {
 
+  /**
+   * @constructor
+   * @param {String} [srcDir='src'] The source directory
+   * @param {String} [dataDir='data'] The data directory
+   * @param {String} [buildDir='build'] The build directory
+   * @param {String} [layoutDir='layouts'] The layout directory
+   * @param {String} [layout='default'] The default layout
+   * @param {Object} [pipeline={}] The dictionary of pipeline tasks
+   * @param {Object} [data={}] The additional data object, this merges into
+   *                           context.page.data object before pipeline processing.
+   */
   constructor(options) {
     this.options = assign({
       srcDir: 'src',
