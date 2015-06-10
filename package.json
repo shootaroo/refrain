@@ -24,8 +24,8 @@
   "scripts": {
     "test": "npm-run-all lint mocha",
 
-    "build": "babel src --out-dir lib --source-maps-inline",
-    "watch": "babel src --out-dir lib --source-maps-inline --watch",
+    "build": "babel src --out-dir lib -s inline",
+    "watch": "babel src --out-dir lib -s inline --watch",
     "jscs": "jscs src/*.js test/*.js",
     "jshint": "jshint src/*.js test/*.js",
     "lint": "npm-run-all jscs jshint",
