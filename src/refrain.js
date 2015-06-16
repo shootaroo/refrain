@@ -3,7 +3,7 @@ import fs from 'fs';
 import path from 'path';
 
 import async from 'async';
-import {assign} from 'fast.js';
+import {assign} from 'lodash';
 import glob from 'glob';
 import YAML from 'yamljs';
 
@@ -108,7 +108,7 @@ class Refrain {
       }
     }
 
-    let pageData = assign(meta || {}, context.page.data || {}, this.options.data || {});
+    let pageData = assign(meta || {}, context.page.data, this.options.data);
 
     let content = {
       filePath: path.resolve(refrain.options.srcDir, relativePath).replace(/\\/, '/'),
