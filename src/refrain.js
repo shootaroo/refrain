@@ -3,8 +3,9 @@ import fs from 'fs';
 import path from 'path';
 
 import async from 'async';
-import {assign} from 'lodash';
+import {assign, defaults, find, isArray, reduce, some} from 'lodash';
 import glob from 'glob';
+import minimatch from 'minimatch';
 import YAML from 'yamljs';
 
 const FRONT_MATTER_REGEX = /^\s*(([^\s\d\w])\2{2,})(?:\x20*([a-z]+))?([\s\S]*?)\1/;
@@ -33,8 +34,23 @@ class Refrain {
       pipeline: {},
       data: {}
     }, options);
-  }
 
+    this.options.pipeline = reduce(this.options.pipeline, (pipeline, tasks, pattern) => {
+      if (pattern.indexOf('/') === 0) {
+        pattern = `**${pattern}`;
+      } else if (pattern.indexOf('*') < 0 && pattern.indexOf('/') < 0 && pattern.indexOf('.') < 0) {
+        pattern = `**/*.${pattern}`;
+      }
+      pipeline[pattern] = isArray(tasks) ? tasks : [tasks];
+      return pipeline;
+    }, {});
+
+    defaults(this.options.pipeline, {
+      '**/*.html': [],
+      '**/*.css': [],
+      '**/*.js': []
+    });
+  }
 
   find(url) {
     url = url.substr(1);
@@ -51,8 +67,7 @@ class Refrain {
     });
     if (files.length) {
       let file = files[0];
-      let ext = path.extname(file).substr(1);
-      return this.options.pipeline[ext] || ext === 'html' || ext === 'css' || ext === 'js' ? file : null;
+      return some(this.options.pipeline, (tasks, pattern) => minimatch(file, pattern)) ? file : null;
     }
     return null;
   }
@@ -166,8 +181,7 @@ class Refrain {
 
 
   pipeline(content, next) {
-    let ext = path.extname(content.filePath).substr(1);
-    let tasks = this.options.pipeline[ext];
+    let tasks = find(this.options.pipeline, (tasks, pattern) => minimatch(content.filePath, pattern));
     if (tasks) {
       async.reduce(tasks, content.page.template, (text, task, next) => {
         if (typeof task === 'string') {
