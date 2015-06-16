@@ -1,39 +1,35 @@
-/* global it, describe */
+/* global describe, it */
+'use strict';
 
-var assert = require('power-assert');
-var createRefrain = require('../src/refrain');
+import assert from 'power-assert';
+import createRefrain from '../src/refrain';
 
 
-describe('refrain', () => {
-  'use strict';
+describe('load', () => {
 
-  describe('load', () => {
+  it('creates the refrain context', () => {
 
-    it('creates the refrain context', () => {
-
-      var refrain = createRefrain({
-        srcDir: 'test/assets'
-      });
-
-      var context = refrain.load('find1.html', null);
-
-      assert(context != null);
-      assert(typeof context === 'object');
-
+    let refrain = createRefrain({
+      srcDir: 'test/assets'
     });
 
-    it('merges the refrain.options.data into context.page.data', () => {
+    let context = refrain.load('find1.html', null);
 
-      var refrain = createRefrain({
-        srcDir: 'test/assets',
-        data: {foo: 'bar'}
-      });
+    assert(context != null);
+    assert(typeof context === 'object');
 
-      var context = refrain.load('find1.html', null);
+  });
 
-      assert(context.page.data.foo === 'bar');
+  it('merges the refrain.options.data into context.page.data', () => {
 
+    let refrain = createRefrain({
+      srcDir: 'test/assets',
+      data: {foo: 'bar'}
     });
+
+    let context = refrain.load('find1.html', null);
+
+    assert(context.page.data.foo === 'bar');
 
   });
 
