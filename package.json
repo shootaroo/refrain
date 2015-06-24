@@ -32,7 +32,8 @@
     "mocha": "mocha --compilers js:espower-babel/guess test/*.js",
 
     "precommit": "npm test",
-    "prepush": "npm test"
+    "prepush": "npm test",
+    "prepublish": "npm-run-all test build"
   },
   "dependencies": {
     "async": "^1.1.0",
