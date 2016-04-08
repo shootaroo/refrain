@@ -111,7 +111,7 @@ class Refrain {
     let match = FRONT_MATTER_REGEX.exec(str);
     let base = path.extname(relativePath) === '.html' ?
       relativePath : relativePath.substr(0, relativePath.length - path.extname(relativePath).length);
-    base = base.replace(/index.html$/, '').replace(/\\/, '/');
+    base = base.replace(/index.html$/, '').replace(/\\/g, '/');
     let meta = match ? YAML.parse(match[4].trim()) || {} : null;
 
     let layout = null;
@@ -126,7 +126,7 @@ class Refrain {
     let pageData = assign(meta || {}, context.page.data, this.options.data);
 
     let content = {
-      filePath: path.resolve(refrain.options.srcDir, relativePath).replace(/\\/, '/'),
+      filePath: path.resolve(refrain.options.srcDir, relativePath).replace(/\\g/, '/'),
       page: assign({
         path: base.indexOf('/') === 0 ? base : '/' + base,
         filePath: path.join(srcDir, src)
@@ -147,7 +147,7 @@ class Refrain {
 
 
   render(src, context, next) {
-    src = src.replace(/\\/, '/');
+    src = src.replace(/\\/g, '/');
     let content = this.load(src, context);
     if (!content) {
       next();
@@ -165,7 +165,7 @@ class Refrain {
       let isRelative = content.page.layout.indexOf('.') === 0;
       let layoutPath = path.join(
         path.relative(this.options.srcDir, isRelative ? path.dirname(content.filePath) : this.options.layoutDir),
-        content.page.layout + '.*').replace(/\\/, '/');
+        content.page.layout + '.*').replace(/\\/g, '/');
       let files = glob.sync(layoutPath, {
         cwd: this.options.srcDir
       });
