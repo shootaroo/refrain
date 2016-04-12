@@ -1,6 +1,6 @@
 {
   "name": "refrain",
-  "version": "0.5.3",
+  "version": "0.5.6",
   "description": "Refrain from unnecessary building.",
   "keywords": [
     "static site generator",
@@ -23,14 +23,12 @@
   ],
   "scripts": {
     "test": "npm-run-all lint mocha",
-
     "build": "babel src --out-dir lib -s inline",
     "watch": "babel src --out-dir lib -s inline --watch",
     "jscs": "jscs src/*.js test/*.js",
     "jshint": "jshint src/*.js test/*.js",
     "lint": "npm-run-all jscs jshint",
     "mocha": "mocha --compilers js:espower-babel/guess test/*.js",
-
     "precommit": "npm test",
     "prepush": "npm test",
     "prepublish": "npm-run-all test build"
